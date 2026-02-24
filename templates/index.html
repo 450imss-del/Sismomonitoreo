@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<title>🌎 Sismo Monitoreo Global</title>
+<style>
+body{
+ background:black;
+ color:#00ffcc;
+ font-family:Arial;
+ text-align:center;
+}
+.card{
+ border:1px solid #00ffcc;
+ padding:10px;
+ margin:10px;
+ border-radius:10px;
+}
+.alerta{
+ color:red;
+ font-size:30px;
+ font-weight:bold;
+ animation:blink 1s infinite;
+}
+@keyframes blink{50%{opacity:0}}
+button{
+ padding:10px;
+ background:red;
+ color:white;
+ border:none;
+ border-radius:5px;
+ font-size:18px;
+}
+</style>
+</head>
+
+<body>
+
+<h1>🌐 MONITOREO SÍSMICO GLOBAL</h1>
+<div id="alerta"></div>
+<div id="sismos"></div>
+
+<button onclick="simulacro()">🚨 SIMULACRO SISMO FUERTE</button>
+
+<script>
+async function cargar(){
+ let r = await fetch("/api/sismos");
+ let data = await r.json();
+ let html = "";
+ data.forEach(s=>{
+   html += `<div class="card">
+   <b>${s.fuente}</b><br>
+   Magnitud: ${s.magnitud}<br>
+   Lugar: ${s.lugar}<br>
+   Tiempo: ${s.tiempo}
+   </div>`;
+   if(s.magnitud >= 6){
+     document.getElementById("alerta").innerHTML =
+     "<div class='alerta'>⚠ SISMO FUERTE DETECTADO</div>";
+   }
+ });
+ document.getElementById("sismos").innerHTML = html;
+}
+setInterval(cargar, 10000); // refresh cada 10s
+cargar();
+
+async function simulacro(){
+ let r = await fetch("/api/simulacro");
+ let s = await r.json();
+ alert("SIMULACRO MAG " + s.magnitud);
+}
+</script>
+
+</body>
+</html>
