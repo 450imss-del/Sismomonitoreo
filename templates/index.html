@@ -2,74 +2,61 @@
 <html lang="es">
 <head>
 <meta charset="UTF-8">
-<title>🌎 Sismo Monitoreo Global</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>🌎 Sismo Monitoreo TV</title>
 <style>
-body{
- background:black;
- color:#00ffcc;
- font-family:Arial;
- text-align:center;
-}
-.card{
- border:1px solid #00ffcc;
- padding:10px;
- margin:10px;
- border-radius:10px;
-}
-.alerta{
- color:red;
- font-size:30px;
- font-weight:bold;
- animation:blink 1s infinite;
-}
-@keyframes blink{50%{opacity:0}}
-button{
- padding:10px;
- background:red;
- color:white;
- border:none;
- border-radius:5px;
- font-size:18px;
-}
+body {margin:0; padding:0; background:black; color:#00ffcc; font-family:Arial; text-align:center;}
+h1 {padding:20px; font-size:2em;}
+#alerta {font-size:2em; color:red; font-weight:bold; animation: blink 1s infinite;}
+@keyframes blink {50% {opacity:0;}}
+.card {background:#0a0a0a; border:2px solid #00ffe1; padding:12px; margin:10px auto; border-radius:10px; width:90%; max-width:600px; box-shadow:0 0 10px #00ffe155; text-align:left;}
+.big-mag {font-size:32px; font-weight:bold; color:yellow;}
+button {padding:10px 20px; font-size:18px; border:none; border-radius:5px; background:red; color:white; margin:20px; cursor:pointer;}
+button:hover {background:#ff5555;}
 </style>
 </head>
-
 <body>
-
 <h1>🌐 MONITOREO SÍSMICO GLOBAL</h1>
 <div id="alerta"></div>
 <div id="sismos"></div>
-
 <button onclick="simulacro()">🚨 SIMULACRO SISMO FUERTE</button>
 
 <script>
-async function cargar(){
- let r = await fetch("/api/sismos");
- let data = await r.json();
- let html = "";
- data.forEach(s=>{
-   html += `<div class="card">
-   <b>${s.fuente}</b><br>
-   Magnitud: ${s.magnitud}<br>
-   Lugar: ${s.lugar}<br>
-   Tiempo: ${s.tiempo}
-   </div>`;
-   if(s.magnitud >= 6){
-     document.getElementById("alerta").innerHTML =
-     "<div class='alerta'>⚠ SISMO FUERTE DETECTADO</div>";
-   }
- });
- document.getElementById("sismos").innerHTML = html;
+async function cargarSismos(){
+    try {
+        const res = await fetch("/api/sismos");
+        const data = await res.json();
+        let html = "";
+        let alerta = "";
+        data.forEach(s => {
+            html += `<div class="card">
+                <div class="big-mag">M ${s.magnitud}</div>
+                <b>${s.fuente}</b><br>
+                Lugar: ${s.lugar}<br>
+                Tiempo: ${new Date(s.tiempo).toLocaleString('es-MX')}
+            </div>`;
+            if(s.magnitud >= 6){ alerta = "⚠ SISMO FUERTE DETECTADO"; }
+        });
+        document.getElementById("sismos").innerHTML = html;
+        document.getElementById("alerta").innerText = alerta;
+    } catch(err){
+        console.error(err);
+        document.getElementById("sismos").innerHTML = "<p>Error cargando datos.</p>";
+    }
 }
-setInterval(cargar, 10000); // refresh cada 10s
-cargar();
-
 async function simulacro(){
- let r = await fetch("/api/simulacro");
- let s = await r.json();
- alert("SIMULACRO MAG " + s.magnitud);
+    try {
+        const res = await fetch("/api/simulacro");
+        const s = await res.json();
+        alert(`SIMULACRO MAG ${s.magnitud} en ${s.lugar}`);
+    } catch(err){
+        console.error(err);
+        alert("Error al ejecutar simulacro");
+    }
 }
+// Refresh cada 10 segundos
+cargarSismos();
+setInterval(cargarSismos, 10000);
 </script>
-
 </body>
 </html>
